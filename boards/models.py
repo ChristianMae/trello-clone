@@ -1,5 +1,6 @@
 from django.db import models
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from accounts.models import User
 
 
@@ -7,6 +8,12 @@ class Board(models.Model):
     """
     Model for board.
     """
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
     archived = models.BooleanField(default=True)
     slug = models.SlugField(max_length=50, unique=True)
     title = models.CharField(max_length=150, blank=False, null=False)
@@ -29,12 +36,26 @@ class BoardMember(models.Model):
         User,
         on_delete=models.CASCADE
     )
-    is_owner = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{self.user}'
+
+
+class BoardInvite(models.Model):
+    """
+    Model for Board Member invite.
+    """
+    board_member = models.ForeignKey(
+        BoardMember,
+        on_delete=models.CASCADE
+    )
+    email = models.EmailField(max_length=255)
+    token = models.CharField(max_length=300)
+
+    def __str__(self):
+        return f'{self.board_member} sent an invite to {self.email}'
 
 
 class List(models.Model):
@@ -63,7 +84,8 @@ class Card(models.Model):
     )
     title = models.CharField(max_length=150)
     description = models.TextField(blank=True, null=True)
-
+    slug = models.SlugField(max_length=50, unique=True)
+    due_date = models.DateTimeField(null=True)
 
     def __str__(self):
         return f'{self.board_list.board.title}: {self.board_list.title} - {self.title}'
@@ -82,3 +104,27 @@ class CardMember(models.Model):
 
     def __str__(self):
         return f'{self.card.name}-{self.board_member.user}'
+
+
+class Label(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class CardLabel(models.Model):
+    card = models.ForeignKey(
+        Card,
+        on_delete=models.CASCADE
+    )
+    label = models.ForeignKey(
+        Label,
+        on_delete=models.CASCADE
+    )
+
+@receiver(post_save, sender=Board)
+def create_member(sender, instance, created, **kwargs):
+    if created:
+        BoardMember.objects.create(
+            board=instance,
+            user=instance.owner,
+            is_admin=True
+        )
