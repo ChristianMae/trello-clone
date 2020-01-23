@@ -186,14 +186,19 @@ class CardSerializer(serializers.ModelSerializer):
 class LabelSerializer(serializers.ModelSerializer):
 
     class Meta:
-        models = Label
-        fields = ['name']
+        model = Label
+        fields = [
+            'name',
+            'is_archived'
+        ]
 
     def create(self, validated_data):
-        label = self.Meta.model.objects.create(**validated)
+        label = self.Meta.model.objects.create(**validated_data)
+        return label
 
     def udpated(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
+        instance.is_archived = validated_data.get('is_archived', instance.is_archived)
         instance.save()
         return instance
 

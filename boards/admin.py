@@ -4,6 +4,7 @@ from .models import (
     BoardInvite,
     BoardMember,
     Card,
+    Label,
     List
 )
 
@@ -11,4 +12,5 @@ admin.site.register(Board)
 admin.site.register(BoardInvite)
 admin.site.register(BoardMember)
 admin.site.register(Card)
+admin.site.register(Label)
 admin.site.register(List)

@@ -4,6 +4,7 @@ from .views import (
   BoardViewSet,
   BoardMemberViewSet,
   CardViewSet,
+  LabelViewSet,
   ListViewSet
 )
 
@@ -31,6 +32,12 @@ urlpatterns = [
     })),
     path('board/<slug:board_slug>/list/<slug:card_slug>/', CardViewSet.as_view({
       'get': 'retrieve',
+      'put': 'put',
+    })),
+    path('label/', LabelViewSet.as_view({
+      'post': 'post',
+    })),
+    path('label/<int:id>/', LabelViewSet.as_view({
       'put': 'put',
     }))
 ]

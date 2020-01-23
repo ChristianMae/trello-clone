@@ -108,6 +108,10 @@ class CardMember(models.Model):
 
 class Label(models.Model):
     name = models.CharField(max_length=100)
+    is_archived = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
 
 
 class CardLabel(models.Model):
@@ -119,7 +123,12 @@ class CardLabel(models.Model):
         Label,
         on_delete=models.CASCADE
     )
+    is_archived = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f'{self.card} - {self.label.name}'
+
+# Signals
 @receiver(post_save, sender=Board)
 def create_member(sender, instance, created, **kwargs):
     if created:

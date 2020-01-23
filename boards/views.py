@@ -15,6 +15,7 @@ from .serializers import (
     BoardMemberSerializer,
     BoardSerializer,
     CardSerializer,
+    LabelSerializer,
     ListSerializer,
 )
 from .utils import get_object_or_none
@@ -175,3 +176,30 @@ class CardViewSet(ViewSet):
 
         serializer = self.serializer_class(card)
         return Response(serializer.data, status=200)
+
+
+class LabelViewSet(ViewSet):
+
+    serializer_class = LabelSerializer
+
+    def post(self, *args, **kwargs):
+        serializer = self.serializer_class(data=self.request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.data, status=400)
+
+    def put(self, *args, **kwargs):
+        label = get_object_or_none(
+            self.serializer_class.Meta.model,
+            id=kwargs.get('id')
+        )
+        serializer = self.serializer_class(
+            label,
+            data=self.request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.data, status=400)
