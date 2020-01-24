@@ -6,12 +6,9 @@ class Signup extends React.Component {
       name: null,
       email: null,
       password: null,
-      errors: {
-        email_errorMsg: null,
-        name_errorMsg: null,
-        password_errorMsg: null
-      }
-
+      email_errorMsg: null,
+      name_errorMsg: null,
+      password_errorMsg: null
     }
 
   handleChange = (e) => {
@@ -22,19 +19,15 @@ class Signup extends React.Component {
 
   handleSubmit = (e) => {
     e.preventDefault()
-    axios.post('http://127.0.0.1:8000/register/', this.state)
+    axios.post('/register/', this.state)
       .then(res => console.log(res))
       .catch((error) => {
-        let response = {
-          email: null,
-          name: null,
-          password: null
-        }
-        const { email, name, password} = JSON.parse(error.response.request.response);
-        let emailss = email ? response.setState({...response.email, email})  : null;
-        response.name = name ? name[0] : null;
-        this.state.errors.password_errorMsg = password ? password[0] : null;
-        console.log(response)
+        const { email, name, password} = error.repsonse.data;
+        this.setState({
+          email_errorMsg: email ? email[0] : null,
+          name_errorMsg: name ? name[0]: null,
+          password_errorMsg: password ? password[0]: null
+        });
       });
   }
 
@@ -42,18 +35,18 @@ class Signup extends React.Component {
     return (
       <div className="container">
         <h3>Sign up Form</h3>
-        <form noValidate onSubmit={this.handleSubmit} >
+        <form noValidate onSubmit={this.handleSubmit}>
           <div className="form-group">
             <label htmlFor="name"> Name </label>
             <input
               type="text"
-              className="form-control is-invalid"
+              className="form-control"
               name="name"
               id="name"
               onChange={this.handleChange}
               required
             />
-            <div className="invalid-feedback"></div>
+            <div>{this.state.name_errorMsg}</div>
           </div>
           <div className="form-group">
             <label htmlFor="email"> Email </label>
@@ -65,7 +58,7 @@ class Signup extends React.Component {
               onChange={this.handleChange}
               required
               />
-            <div className="invalid-feedback">Invalid Email Address</div>
+             <div>{this.state.email_errorMsg}</div>
           </div>
           <div className="form-group">
             <label htmlFor="password"> Password </label>
@@ -77,7 +70,7 @@ class Signup extends React.Component {
               onChange={this.handleChange}
               required
             />
-            <div className="invalid-feedback"></div>
+            <div>{this.state.password_errorMsg}</div>
           </div>
           <button type="submit" className="btn btn-primary btn-block">Login</button>
         </form>

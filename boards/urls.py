@@ -10,6 +10,9 @@ from .views import (
 
 
 urlpatterns = [
+    path('boards/', BoardViewSet.as_view({
+      'get': 'retrieve_boards',
+    })),
     path('board/', BoardViewSet.as_view({
       'post': 'post',
       'put': 'put',
@@ -39,5 +42,5 @@ urlpatterns = [
     })),
     path('label/<int:id>/', LabelViewSet.as_view({
       'put': 'put',
-    }))
+    })),
 ]

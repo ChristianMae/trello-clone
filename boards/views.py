@@ -28,6 +28,13 @@ class BoardViewSet(ViewSet):
     serializer_class = BoardSerializer
     permission_classes = (IsAuthenticated, )
 
+    def retrieve_boards(self, *args, **kwargs):
+        serializer = self.serializer_class(
+            self.serializer_class.Meta.model.objects.filter(owner=self.request.user),
+            many=True
+        )
+        return Response(serializer.data, status=200)
+
     def post(self, *arg, **kwargs):
         "Create board"
         serializer = self.serializer_class(
@@ -36,8 +43,8 @@ class BoardViewSet(ViewSet):
         )
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=200)
-        return Response(serializer.data, status=400)
+            return Response(status=200)
+        return Response(status=400)
 
     def put(self, *args, **kwargs):
         " Update board details. "
@@ -50,8 +57,8 @@ class BoardViewSet(ViewSet):
         )
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=200)
-        return Response(serializer.data, status=400)
+            return Response(status=200)
+        return Response(status=400)
 
     def retrieve(self, *args, **kwargs):
         " Retrieve "
@@ -59,7 +66,7 @@ class BoardViewSet(ViewSet):
         board = get_object_or_404(self.serializer_class.Meta.model, slug=slug)
 
         serializer = self.serializer_class(board)
-        return Response(serializer.data, status=200)
+        return Response( status=200)
 
 
 class BoardInviteViewSet(RequiredBoardMemberMixin, ViewSet):
