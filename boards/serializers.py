@@ -30,6 +30,7 @@ class BoardSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'archived',
+            'slug'
         ]
 
     def create(self, validated_data):

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect
 from rest_framework.mixins import UpdateModelMixin
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.response import Response
 from accounts.models import User
@@ -26,11 +26,11 @@ class BoardViewSet(ViewSet):
     Board viewset.
     """
     serializer_class = BoardSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (AllowAny, )
 
     def retrieve_boards(self, *args, **kwargs):
         serializer = self.serializer_class(
-            self.serializer_class.Meta.model.objects.filter(owner=self.request.user),
+            self.serializer_class.Meta.model.objects.filter(owner_id='1'),
             many=True
         )
         return Response(serializer.data, status=200)

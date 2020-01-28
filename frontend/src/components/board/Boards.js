@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { connect } from 'react-redux';
 
 class Boards extends React.Component {
   state = {
@@ -8,28 +9,28 @@ class Boards extends React.Component {
     ]
   }
 
-  componentDidMount(){
-    const url = '/boards/';
-    const token = localStorage.getItem('access_token');
-    const headers = {
-      Authorization: "Bearer  " + token
-    }
+  // componentDidMount(){
+  //   const url = '/boards/';
+  //   const token = localStorage.getItem('access_token');
+  //   const headers = {
+  //     Authorization: "Bearer  " + token
+  //   }
 
-    axios.get(url, {headers})
-    .then(res =>{
-      let response = res.data;
-      console.log(response[0])
-      let boards = [...this.state.boards, response[0]];
-      this.setState({
-        boards: boards
-      });
-      console.log(this.state)
-    })
-    .catch(res => console.log(res));
-  }
+  //   axios.get(url, {headers})
+  //   .then(res =>{
+  //     let response = res.data;
+  //     console.log(response[0])
+  //     let boards = [...this.state.boards, response[0]];
+  //     this.setState({
+  //       boards: boards
+  //     });
+  //     console.log(this.state)
+  //   })
+  //   .catch(res => console.log(res));
+  // }
 
   render() {
-    const boards = this.state.boards;
+    const { boards } = this.props;
     const boardList = boards.map(board => {
       console.log(boards)
       return (
@@ -53,4 +54,10 @@ class Boards extends React.Component {
   }
 }
 
-export default Boards;
+const mapStateToProps = (state) => {
+  return {
+    boards : state.boards
+  }
+}
+
+export default connect(mapStateToProps)(Boards);
