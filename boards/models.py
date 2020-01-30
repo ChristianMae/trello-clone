@@ -15,7 +15,7 @@ class Board(models.Model):
         null=True
     )
     archived = models.BooleanField(default=True)
-    slug = models.SlugField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True, blank=True)
     title = models.CharField(max_length=150, blank=False, null=False)
 
     def __str__(self):

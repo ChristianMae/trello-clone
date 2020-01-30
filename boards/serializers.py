@@ -23,6 +23,7 @@ class BoardSerializer(serializers.ModelSerializer):
     """
     Board Serializer.
     """
+    slug = serializers.SlugField(allow_blank=True)
 
     class Meta:
         model = Board
@@ -34,21 +35,11 @@ class BoardSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        title = validated_data.get('title')
         board = self.Meta.model.objects.create(
-            slug = self.generate_unique_slug(title),
             owner = self.context['user'],
             **validated_data
         )
         return board
-
-    def generate_unique_slug(self, title):
-        while True:
-            slug = slugify(f'{random_str_generator()} {title}')
-            try:
-                self.Meta.model.objects.get(slug=slug)
-            except self.Meta.model.DoesNotExist:
-                return slug
 
     def update(self, instance, validated_data):
         instance.archived = validated_data.get('archived', instance.archived)
@@ -132,10 +123,11 @@ class BoardMemberSerializer(serializers.ModelSerializer):
 
 
 class ListSerializer(serializers.ModelSerializer):
+    cards = serializers.SerializerMethodField()
 
     class Meta:
         model = List
-        fields = ['title']
+        fields = ['id', 'title', 'cards']
 
     def create(self, validated_data):
         board = get_object_or_none(Board, **self.context)
@@ -148,12 +140,17 @@ class ListSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+    def get_cards(self, obj):
+        cards = obj.card_set.all()
+        return CardSerializer(cards, many=True).data
+
 
 class CardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Card
         fields = [
+            'id',
             'title',
             'description'
         ]

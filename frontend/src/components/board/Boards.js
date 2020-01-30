@@ -12,9 +12,9 @@ class Boards extends React.Component {
   // componentDidMount(){
   //   const url = '/boards/';
   //   const token = localStorage.getItem('access_token');
-  //   const headers = {
-  //     Authorization: "Bearer  " + token
-  //   }
+    //   const headers = {
+    //   Authorization: "Bearer  " + token
+    // }
 
   //   axios.get(url, {headers})
   //   .then(res =>{

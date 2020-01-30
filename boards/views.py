@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.response import Response
 from accounts.models import User
+from django.template.defaultfilters import slugify
 from .mixins import RequiredBoardMemberMixin
 from .models import (
     Board,
@@ -18,7 +19,10 @@ from .serializers import (
     LabelSerializer,
     ListSerializer,
 )
-from .utils import get_object_or_none
+from .utils import (
+    get_object_or_none,
+    random_str_generator
+)
 
 
 class BoardViewSet(ViewSet):
@@ -26,30 +30,37 @@ class BoardViewSet(ViewSet):
     Board viewset.
     """
     serializer_class = BoardSerializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def retrieve_boards(self, *args, **kwargs):
         serializer = self.serializer_class(
-            self.serializer_class.Meta.model.objects.filter(owner_id='1'),
+            self.serializer_class.Meta.model.objects.filter(owner=self.request.user),
             many=True
         )
         return Response(serializer.data, status=200)
 
     def post(self, *arg, **kwargs):
         "Create board"
-        serializer = self.serializer_class(
-            data=self.request.data,
-            context={'user': self.request.user}
-        )
+        title = self.request.data.get('title', None)
+        data = {'title': title, 'slug': self.generate_unique_slug(title=title)}
+        serializer = self.serializer_class(data=data, context={'user': self.request.user})
         if serializer.is_valid():
             serializer.save()
             return Response(status=200)
         return Response(status=400)
 
+    def generate_unique_slug(self, title):
+        while True:
+            slug = slugify(f'{random_str_generator()} {title}')
+            try:
+                Board.objects.get(slug=slug)
+            except Board.DoesNotExist:
+                return slug
+
     def put(self, *args, **kwargs):
         " Update board details. "
-        board_id = self.request.data.get('id')
-        board = self.serializer_class.Meta.model.objects.get(id=board_id)
+        board_slug = self.request.data.get('slug')
+        board = self.serializer_class.Meta.model.objects.get(slug=board_slug)
         serializer = self.serializer_class(
             board,
             data=self.request.data,
@@ -119,8 +130,8 @@ class ListViewSet(ViewSet):
     """
     Viewset for List
     """
-
     serializer_class = ListSerializer
+    permission_classes = (IsAuthenticated, )
 
     def post(self, *args, **kwargs):
         serializer = self.serializer_class(data=self.request.data, context=kwargs)
@@ -130,7 +141,7 @@ class ListViewSet(ViewSet):
         return Response(serializer.data, status=400)
 
     def put(self, *args, **kwargs):
-        _list_id = self.request.POST.get('id')
+        _list_id = self.request.data.get('id')
         _list = get_object_or_none(self.serializer_class.Meta.model, id=_list_id)
         serializer = self.serializer_class(
             _list,
@@ -142,6 +153,13 @@ class ListViewSet(ViewSet):
             return Response(serializer.data, status=200)
         return Response(serializer.data, status=400)
 
+    def retrieve(self, *args, **kwargs):
+        serializer = self.serializer_class(
+            self.serializer_class.Meta.model.objects.filter(board__slug= kwargs.get('slug', None)),
+            many=True
+        )
+        return Response(serializer.data, status=200)
+
 
 class CardViewSet(ViewSet):
     """
@@ -149,6 +167,7 @@ class CardViewSet(ViewSet):
     """
 
     serializer_class = CardSerializer
+    permission_classes = (IsAuthenticated, )
 
     def post(self, *args, **kwargs):
         _list = get_object_or_none(List, id=kwargs.get('list'))
@@ -182,6 +201,16 @@ class CardViewSet(ViewSet):
         card = get_object_or_404(self.serializer_class.Meta.model, slug=slug)
 
         serializer = self.serializer_class(card)
+        return Response(serializer.data, status=200)
+
+    def retrieve_cards(self, *args, **kwargs):
+        serializer = self.serializer_class(
+            self.serializer_class.Meta.model.objects.filter(
+                board_list__id= kwargs.get('list', None),
+                archived=False
+                ),
+            many=True
+        )
         return Response(serializer.data, status=200)
 
 
