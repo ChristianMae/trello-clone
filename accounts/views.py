@@ -20,4 +20,4 @@ class UserViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(status=204)
-        return Response(status=400)
+        return Response(serializer.errors, status=400)

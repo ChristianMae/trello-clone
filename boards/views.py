@@ -34,7 +34,7 @@ class BoardViewSet(ViewSet):
 
     def retrieve_boards(self, *args, **kwargs):
         serializer = self.serializer_class(
-            self.serializer_class.Meta.model.objects.filter(owner=self.request.user),
+            self.serializer_class.Meta.model.objects.filter(owner=self.request.user, archived=False),
             many=True
         )
         return Response(serializer.data, status=200)
